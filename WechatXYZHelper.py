@@ -11,11 +11,13 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 
 # 群聊人员列表
 member_python_list = []
+member_python_list_2 = []
 member_android_list = []
 member_speak_list = []
 
 # 加群人员的列表
 group_python_list = []  # Python
+group_python_list_2 = []  # Python 2群
 group_android_list = []  # Android
 group_speak_list = []  # 闲聊
 
@@ -78,10 +80,16 @@ def deal_with_msg(msg):
     elif text == u'1':
         time.sleep(random.randint(1, 3))
         nickname = msg['User']['NickName']
-        if nickname not in member_python_list:
+        if nickname not in member_python_list and nickname not in member_python_list_2:
             itchat.send_msg("【" + nickname + "】童鞋\n" + add_group_answer, msg['FromUserName'])
-            if nickname is not None and nickname not in group_python_list:
-                group_python_list.append(nickname)
+            if nickname is not None:
+                # 人数超过阀值拉入二群
+                if len(member_python_list) >= 475:
+                    if nickname not in group_python_list_2:
+                        group_python_list_2.append(nickname)
+                else:
+                    if nickname not in group_python_list:
+                        group_python_list.append(nickname)
         else:
             itchat.send_msg(add_repeat_answer, msg['FromUserName'])
     # 加入Android交流群
@@ -163,29 +171,33 @@ def revoke_msg(msg):
 
 # 发送加群人信息列表
 def send_friend_group():
-    friend_dict = {"Python": [], "Android": [], "Speak": []}
+    friend_dict = {"Python": [], "Android": [], "Speak": [], "Python2": []}
     for p in group_python_list:
         friend_dict['Python'].append(p)
     for a in group_android_list:
         friend_dict['Android'].append(a)
     for s in group_speak_list:
         friend_dict['Speak'].append(s)
-    if len(friend_dict['Python']) > 0 or len(friend_dict['Android']) > 0 or len(friend_dict['Speak']) > 0:
-        itchat.send_msg(str(json.dumps(friend_dict,ensure_ascii=False, indent=4)), toUserName="filehelper")
+    for p2 in group_python_list_2:
+        friend_dict['Python2'].append(p2)
+    if len(friend_dict['Python']) > 0 or len(friend_dict['Android']) > 0 or len(friend_dict['Speak']) > 0 or len(
+                    friend_dict['Python2']) > 0:
+        itchat.send_msg(str(json.dumps(friend_dict, ensure_ascii=False, indent=4)), toUserName="filehelper")
         group_python_list.clear()
+        group_python_list_2.clear()
         group_android_list.clear()
         group_speak_list.clear()
 
 
 # 登陆成功后开启定时任务
 def after_login():
-    sched.add_job(send_friend_group, 'interval', hours=3)
+    sched.add_job(send_friend_group, 'interval', hours=2)
     sched.start()
 
 
 # 登陆时先获取群聊的UserName，获取群成员昵称会用到
 def get_member_list():
-    python_chat_rooms = itchat.search_chatrooms(name='小猪的Python学习交流群')
+    python_chat_rooms = itchat.search_chatrooms(name='小猪的Python学习交流1群')
     if len(python_chat_rooms) > 0:
         group_username = python_chat_rooms[0]['UserName']
         result = itchat.update_chatroom(group_username, detailedMember=True)
@@ -193,6 +205,14 @@ def get_member_list():
         results = nickname_compile.findall(str(result))
         for result in results:
             member_python_list.append(result)
+    python_chat_rooms_2 = itchat.search_chatrooms(name='小猪的Python学习交流2群')
+    if len(python_chat_rooms_2) > 0:
+        group_username = python_chat_rooms_2[0]['UserName']
+        result = itchat.update_chatroom(group_username, detailedMember=True)
+        member_python_list_2.clear()
+        results = nickname_compile.findall(str(result))
+        for result in results:
+            python_chat_rooms_2.append(result)
     android_chat_rooms = itchat.search_chatrooms(name='小猪的Android学习交流群')
     if len(android_chat_rooms) > 0:
         group_username = android_chat_rooms[0]['UserName']
