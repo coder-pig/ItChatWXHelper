@@ -10,16 +10,18 @@ from itchat.content import *
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 # 群聊人员列表
-member_python_list = []
+member_python_list_1 = []
 member_python_list_2 = []
 member_android_list = []
 member_speak_list = []
+member_guy_list = []
 
 # 加群人员的列表
-group_python_list = []  # Python
+group_python_list_1 = []  # Python 1群
 group_python_list_2 = []  # Python 2群
-group_android_list = []  # Android
-group_speak_list = []  # 闲聊
+group_android_list = []  # Android 群
+group_speak_list = []  # 闲聊 群
+group_guy_list = [] # 公号读者 群
 
 # 获取群聊人员的列表的正则
 nickname_compile = re.compile(r"\<ChatroomMember:.*?'NickName': '(.*?)'", re.S)
@@ -36,11 +38,12 @@ menu_answer = '(˶ᵔᵕᵔ˶)锵锵锵~🎉🎉🎉，\n' \
               ' 🐷 1.加入「Python学习交流群」\n' \
               ' 🐷 2.加入「Android学习交流群」\n' \
               ' 🐷 3.加入「闲聊扯淡群」\n' \
-              ' 🐷 4.关注公众号「抠腚男孩」\n' \
-              ' 🐷 5.小猪的「个人博客」\n' \
-              ' 🐷 6.小猪的「GitHub」\n' \
-              ' 🐷 7.给小猪「打赏」\n' \
-              ' 🐷 8.小猪「微信」（不闲聊哦~）\n' \
+              ' 🐷 4.加入「抠腚男孩的妙妙屋」\n' \
+              ' 🐷 5.关注公众号「抠腚男孩」\n' \
+              ' 🐷 6.小猪的「个人博客」\n' \
+              ' 🐷 7.小猪的「GitHub」\n' \
+              ' 🐷 8.给小猪「打赏」\n' \
+              ' 🐷 9.小猪的「微信」（不闲聊哦~）\n' \
               '注：请不要回复过于频繁，智障机器人不会聊天哦！🐶'
 
 # 加群统一回复词
@@ -80,16 +83,16 @@ def deal_with_msg(msg):
     elif text == u'1':
         time.sleep(random.randint(1, 3))
         nickname = msg['User']['NickName']
-        if nickname not in member_python_list and nickname not in member_python_list_2:
+        if nickname not in member_python_list_1 and nickname not in member_python_list_2:
             itchat.send_msg("【" + nickname + "】童鞋\n" + add_group_answer, msg['FromUserName'])
             if nickname is not None:
                 # 人数超过阀值拉入二群
-                if len(member_python_list) >= 475:
+                if len(member_python_list_1) >= 495:
                     if nickname not in group_python_list_2:
                         group_python_list_2.append(nickname)
                 else:
-                    if nickname not in group_python_list:
-                        group_python_list.append(nickname)
+                    if nickname not in group_python_list_1:
+                        group_python_list_1.append(nickname)
         else:
             itchat.send_msg(add_repeat_answer, msg['FromUserName'])
     # 加入Android交流群
@@ -112,20 +115,30 @@ def deal_with_msg(msg):
                 group_speak_list.append(nickname)
         else:
             itchat.send_msg(add_repeat_answer, msg['FromUserName'])
-    # 公众号
+    # 加入公号读者群
     elif text == u'4':
+        time.sleep(random.randint(1, 3))
+        nickname = msg['User']['NickName']
+        if nickname not in member_guy_list:
+            itchat.send_msg("【" + nickname + "】童鞋\n" + add_group_answer, msg['FromUserName'])
+            if nickname is not None and nickname not in group_guy_list:
+                group_guy_list.append(nickname)
+        else:
+            itchat.send_msg(add_repeat_answer, msg['FromUserName'])
+    # 公众号
+    elif text == u'5':
         time.sleep(random.randint(1, 3))
         itchat.send_image('gzh.jpg', msg['FromUserName'])
     # 个人博客
-    elif text == u'5':
+    elif text == u'6':
         time.sleep(random.randint(1, 3))
         return 'coder-pig的个人主页-掘金：https://juejin.im/user/570afb741ea493005de84da3'
     # GitHub
-    elif text == u'6':
+    elif text == u'7':
         time.sleep(random.randint(1, 3))
         return 'https://github.com/coder-pig'
     # 打赏
-    elif text == u'7':
+    elif text == u'8':
         time.sleep(random.randint(1, 3))
         itchat.send_image('ds.gif', msg['FromUserName'])
         time.sleep(random.randint(1, 3))
@@ -133,7 +146,7 @@ def deal_with_msg(msg):
         time.sleep(random.randint(1, 3))
         itchat.send_image('wxpay.png', msg['FromUserName'])
     # 小猪微信
-    elif text == u'8':
+    elif text == u'9':
         time.sleep(random.randint(1, 3))
         itchat.send_msg(pig_answer, msg['FromUserName'])
         time.sleep(random.randint(1, 3))
@@ -153,26 +166,36 @@ def revoke_msg(msg):
         group_name = result.group(1)
         if '邀请' in str(msg['Text']):
             results = nickname_compile.findall(str(msg))
-            if group_name == '小猪的Python学习交流群':
-                member_python_list.clear()
+            if group_name == '小猪的Python学习交流1群':
+                member_python_list_1.clear()
                 for result in results:
-                    member_python_list.append(result)
+                    member_python_list_1.append(result)
+            elif group_name == '小猪的Python学习交流2群':
+                member_python_list_2.clear()
+                results = nickname_compile.findall(str(msg))
+                for result in results:
+                    member_python_list_2.append(result)
             elif group_name == '小猪的Android学习交流群':
-                member_python_list.clear()
+                member_android_list.clear()
                 results = nickname_compile.findall(str(msg))
                 for result in results:
                     member_android_list.append(result)
             elif group_name == '技♂术交流🈲':
-                member_python_list.clear()
+                member_speak_list.clear()
                 results = nickname_compile.findall(str(msg))
                 for result in results:
                     member_speak_list.append(result)
+            elif group_name == '抠腚男孩的妙妙屋':
+                member_guy_list.clear()
+                results = nickname_compile.findall(str(msg))
+                for result in results:
+                    member_guy_list.append(result)
 
 
 # 发送加群人信息列表
 def send_friend_group():
-    friend_dict = {"Python": [], "Android": [], "Speak": [], "Python2": []}
-    for p in group_python_list:
+    friend_dict = {"Python": [], "Android": [], "Speak": [], "Python2": [], "Guy":[]}
+    for p in group_python_list_1:
         friend_dict['Python'].append(p)
     for a in group_android_list:
         friend_dict['Android'].append(a)
@@ -180,18 +203,21 @@ def send_friend_group():
         friend_dict['Speak'].append(s)
     for p2 in group_python_list_2:
         friend_dict['Python2'].append(p2)
+    for g in group_guy_list:
+        friend_dict['Guy'].append(g)
     if len(friend_dict['Python']) > 0 or len(friend_dict['Android']) > 0 or len(friend_dict['Speak']) > 0 or len(
-                    friend_dict['Python2']) > 0:
+                    friend_dict['Python2']) > 0 or len(friend_dict['Guy']) > 0:
         itchat.send_msg(str(json.dumps(friend_dict, ensure_ascii=False, indent=4)), toUserName="filehelper")
-        group_python_list.clear()
+        group_python_list_1.clear()
         group_python_list_2.clear()
         group_android_list.clear()
         group_speak_list.clear()
+        group_guy_list.clear()
 
 
-# 登陆成功后开启定时任务
+# 登陆成功后开启定时任务，每隔2个小时发送一次加群人数
 def after_login():
-    sched.add_job(send_friend_group, 'interval', hours=2)
+    sched.add_job(send_friend_group, 'interval', minutes=1)
     sched.start()
 
 
@@ -201,10 +227,10 @@ def get_member_list():
     if len(python_chat_rooms) > 0:
         group_username = python_chat_rooms[0]['UserName']
         result = itchat.update_chatroom(group_username, detailedMember=True)
-        member_python_list.clear()
+        member_python_list_1.clear()
         results = nickname_compile.findall(str(result))
         for result in results:
-            member_python_list.append(result)
+            member_python_list_1.append(result)
     python_chat_rooms_2 = itchat.search_chatrooms(name='小猪的Python学习交流2群')
     if len(python_chat_rooms_2) > 0:
         group_username = python_chat_rooms_2[0]['UserName']
@@ -229,7 +255,14 @@ def get_member_list():
         results = nickname_compile.findall(str(result))
         for result in results:
             member_speak_list.append(result)
-
+    guy_chat_rooms = itchat.search_chatrooms(name='抠腚男孩的妙妙屋')
+    if len(android_chat_rooms) > 0:
+        group_username = guy_chat_rooms[0]['UserName']
+        result = itchat.update_chatroom(group_username, detailedMember=True)
+        member_guy_list.clear()
+        results = nickname_compile.findall(str(result))
+        for result in results:
+            member_guy_list.append(result)
 
 if __name__ == '__main__':
     sched = BlockingScheduler()
